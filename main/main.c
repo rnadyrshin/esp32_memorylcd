@@ -26,6 +26,7 @@ static void blink_led(void)
         /* Set all LED off to clear all pixels */
         led_strip_clear(led_strip);
     }
+    s_led_state = !s_led_state;
 }
 
 static void configure_led(void)
@@ -57,17 +58,39 @@ static void configure_led(void)
 
 void app_main()
 {
-    configure_led();
+    //configure_led();
 
-    //memorylcd_init();
+    ESP_LOGI(TAG, "Init display");
+    memorylcd_init();
+    memorylcd_PowerOn();
+
+
+    for(uint16_t x = 0; x < 200; x++) {
+        //frameBuffer[5][x] = 
+        GFXDisplayPutPixel_FB(x, 0, BLACK);
+        GFXDisplayPutPixel_FB(x, 10, BLACK);
+        GFXDisplayPutPixel_FB(x, 20, BLACK);
+        GFXDisplayPutPixel_FB(x, 30, BLACK);
+        GFXDisplayPutPixel_FB(x, 40, BLACK);
+        GFXDisplayPutPixel_FB(x, 50, BLACK);
+        //GFXDisplayPutPixel_FB(x, 10, WHITE);
+    }
+
+    //uint16_t cntr = 0;
 
     while (1) {
-        ESP_LOGI(TAG, "Turning the LED %s!", s_led_state == true ? "ON" : "OFF");
-        blink_led();
-        /* Toggle the LED state */
-        s_led_state = !s_led_state;
+        //ESP_LOGI(TAG, "Turning the LED %s!", s_led_state == true ? "ON" : "OFF");
+        //blink_led();
 
-        //memorylcd_update(0, 0);
+        ESP_LOGI(TAG, "Update");
+        
+        memorylcd_update(0, 0);
+        //GFXDisplayTestPattern(0x55, 0);
+
+        //GFXDisplayPutPixel(cntr, cntr, BLACK);
+        //if(++cntr >= 240)
+        //    cntr = 0;
+
         vTaskDelay(200 /*CONFIG_BLINK_PERIOD*/ / portTICK_PERIOD_MS);
     }
 }

@@ -30,12 +30,13 @@
 //#define 	LS011B7DH03
 
 //@note pin number definition, hardware dependent
-	//ESP32    :  IO23(VSPI_MOSI) IO18(VSPI_SCK) IO5(SCS) IO25(EXTCOMIN) IO26(DISP)
-	//Memory LCD: MOSI            SCK            SCS      EXTCOMIN       DISP
-    #define SPI_HOST              SPI2_HOST
-	#define GFX_DISPLAY_SCS       35
-	#define GFX_DISPLAY_EXTCOMIN  36
-	#define GFX_DISPLAY_DISP      37
+#define SPI_HOST              SPI2_HOST
+
+#define GFX_DISPLAY_SCK       10
+#define GFX_DISPLAY_MOSI      11
+#define GFX_DISPLAY_SCS       12
+#define GFX_DISPLAY_EXTCOMIN  13
+#define GFX_DISPLAY_DISP      14
 
 #ifndef MIN
 #define MIN(A,B)    ({ __typeof__(A) __a = (A); __typeof__(B) __b = (B); __a < __b ? __a : __b; })
@@ -66,7 +67,7 @@
 //@note Vertical screen size in line number
 #define GFX_FB_CANVAS_H	DISP_VER_RESOLUTION
 //@note EXTCOMIN pulse frequency in hal_extcom_start(hz) fcn. -> GFXDisplayOn()
-#define EXTCOMIN_FREQ 1 
+#define EXTCOMIN_FREQ 1
 
 extern uint8_t frameBuffer[GFX_FB_CANVAS_H][GFX_FB_CANVAS_W];
 
@@ -82,7 +83,7 @@ void memorylcd_update(uint8_t *buff, uint16_t len);
 
 void hal_delayMs(uint32_t ms);
 void hal_delayUs(uint32_t us);
-void hal_extcom_start(uint8_t hz);
+void hal_extcom_start(uint16_t hz);
 void hal_extcom_stop();
 void hal_extcom_toggle(TimerHandle_t xTimer);
 
@@ -91,12 +92,13 @@ void hal_extcom_toggle(TimerHandle_t xTimer);
 * @note	API functions
 ********************************************************************************************************
 */
-void GFXDisplayAllClear();
-void GFXDisplayPowerOn();
+void memorylcd_Clear();
+void memorylcd_PowerOn();
 void GFXDisplayOn();
 void GFXDisplayPowerOff();
 void GFXDisplayOff();
 void GFXDisplayPutPixel(uint16_t x, uint16_t y, COLOR color);
+void GFXDisplayPutPixel_FB(uint16_t x, uint16_t y, COLOR color);
 void GFXDisplayLineDrawH(uint16_t x1, uint16_t x2, uint16_t y, COLOR color, uint8_t thick);
 void GFXDisplayLineDrawV(uint16_t x, uint16_t y1, uint16_t y2, COLOR color, uint8_t thick);
 void GFXDisplayDrawRect(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom, COLOR color);

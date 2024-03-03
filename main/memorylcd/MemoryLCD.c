@@ -15,11 +15,16 @@
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
 //#include "SpiMasterDevice.h"
+#include "esp_log.h"
 
 #include "MemoryLCD.h"
 
 #define NOP() asm volatile ("nop")
+#define UPD_CMD     0x01    //0x80
+#define VCOM_CMD    0x02    //0x40
+#define CLEAR_CMD   0x03    //0x20
 
+static bool ExtPinLast = false;
 static spi_host_device_t SpiHost = SPI_HOST;
 static spi_device_handle_t SpiDevice = 0;
 static TimerHandle_t Timer;
@@ -38,9 +43,9 @@ uint8_t frameBuffer[GFX_FB_CANVAS_H][GFX_FB_CANVAS_W];
 			} COLOR;
  */
 
-static void GFXDisplayPutPixel_FB(uint16_t x, uint16_t y, COLOR color)
+void GFXDisplayPutPixel_FB(uint16_t x, uint16_t y, COLOR color)
 {
-	if(y>(GFX_FB_CANVAS_H-1)||((x>>3)>(GFX_FB_CANVAS_W-1)))//avoid running outside array index
+	if(y > (GFX_FB_CANVAS_H - 1) || ((x >> 3) > (GFX_FB_CANVAS_W - 1)))
         return;
 		
 	uint8_t maskBit;
@@ -58,46 +63,39 @@ static void GFXDisplayUpdateLine(uint16_t line, uint8_t *buf);
 static void GFXDisplayUpdateBlock(uint16_t start_line, uint16_t end_line, uint8_t *buf);
 static uint16_t bfc_DrawChar_RowRowUnpacked(uint16_t x0, uint16_t y0, const BFC_FONT *pFont, uint16_t ch, COLOR color, COLOR bg);
 
-/**
- * @brief Clear memory internal data and writes white for all pixels
- */
-void GFXDisplayAllClear()
+void memorylcd_Clear()
 {
-  digitalWrite(GFX_DISPLAY_SCS, HIGH);  
-  hal_delayUs(3); //SCS setup time of tsSCS (refer to datasheet for timing details)
+    digitalWrite(GFX_DISPLAY_SCS, HIGH);  
+    hal_delayUs(3); //SCS setup time of tsSCS (refer to datasheet for timing details)
 
-  spi_transaction_t t;
-  uint8_t buff[2];
-  buff[0] = 0x04; //M0="L", M2="H" with LSB sent first
-  buff[1] = 0x00;
+    uint8_t buff[2] = {CLEAR_CMD, 0x00};
 
-  memset(&t, 0, sizeof(t));
-  t.length = 2 * 8;
-  //t.rxlength = t.length;
-  //t.user = (void *) "nRF24";
-  t.tx_buffer = buff;
-  spi_device_polling_transmit(SpiDevice, &t);
+    spi_transaction_t t;
+    memset(&t, 0, sizeof(t));
+    t.length = 2 * 8;
+    t.tx_buffer = buff;
+    spi_device_polling_transmit(SpiDevice, &t);
 
-  hal_delayUs(1); //SCS hold time of thSCS (refer to datasheet for timing details)
-  digitalWrite(GFX_DISPLAY_SCS, LOW);  
+    hal_delayUs(1); //SCS hold time of thSCS (refer to datasheet for timing details)
+    digitalWrite(GFX_DISPLAY_SCS, LOW);  
 
-  memset((void *)&frameBuffer, 0xFF, sizeof(frameBuffer));  //clear SRAM of the MCU
+    memset((void *)&frameBuffer, 0xFF, sizeof(frameBuffer));  //clear SRAM of the MCU
 }
 
 /**
  * @brief Power-on sequence with 5V0 enabled, clear pixel memory (x2), DISP pin set high, and EXTCOMIN pulse started<br>
  *        Normal operation after this function executed. EXTCOMIN_FREQ indicates the pulse frequency defined in MemoryLCD.h
  */
-void GFXDisplayPowerOn()
+void memorylcd_PowerOn()
 {
-  GFXDisplayAllClear();	//need to do it twice for clear pixel memory (somehow); otherwise, pixel memory not always cleared!!!
-  GFXDisplayAllClear();
+    hal_delayUs(30);
+    memorylcd_Clear();
 
-  GFXDisplayOn(); //DISP = '1'
-  hal_delayUs(30);
-  hal_extcom_start(EXTCOMIN_FREQ); //turn on EXTCOMIN pulse
-  hal_delayUs(30);
-  //normal operation after this...
+    hal_delayUs(30);
+    GFXDisplayOn();
+    hal_delayUs(30);
+    hal_extcom_start(EXTCOMIN_FREQ); //turn on EXTCOMIN pulse
+    hal_delayUs(30);
 }
 
 /**
@@ -114,10 +112,10 @@ void GFXDisplayOn()
  */
 void GFXDisplayPowerOff()
 {
-  GFXDisplayAllClear();
-  GFXDisplayOff(); 	//DISP = '0'
-  hal_extcom_stop();  	//stop EXTCOMIN pulse
-  hal_delayUs(30);
+    memorylcd_Clear();
+    GFXDisplayOff(); 	//DISP = '0'
+    hal_extcom_stop();  	//stop EXTCOMIN pulse
+    hal_delayUs(30);
 }
 
 /**
@@ -229,7 +227,7 @@ void GFXDisplayDrawRect(uint16_t left, uint16_t top, uint16_t right, uint16_t bo
       GFXDisplayPutPixel_FB(x,y,color);	//update the framebuffer first
   }
 
-  GFXDisplayUpdateBlock(_top+1, _bottom+1, (uint8_t *)frameBuffer[_top]);
+  GFXDisplayUpdateBlock(_top, _bottom, (uint8_t *)frameBuffer[_top]);
 }
 
 /**
@@ -308,41 +306,41 @@ void SendDummyBytes() {
  */
 uint32_t GFXDisplayTestPattern(uint8_t pattern, void (*pfcn)(void))
 {
-  uint32_t timing = 0;
-  uint32_t sMillis = xTaskGetTickCount();
+    uint32_t timing = 0;
+    uint32_t sMillis = xTaskGetTickCount();
 
-  digitalWrite(GFX_DISPLAY_SCS, HIGH);  
-  hal_delayUs(3); //SCS setup time of tsSCS (refer to datasheet for timing details)
+    digitalWrite(GFX_DISPLAY_SCS, HIGH);  
+    hal_delayUs(3); //SCS setup time of tsSCS (refer to datasheet for timing details)
 
-  uint16_t oneLineLen = (DISP_HOR_RESOLUTION >> 3) + 2;
-  uint8_t buff[oneLineLen];
+    uint16_t oneLineLen = (DISP_HOR_RESOLUTION >> 3) + 2;
+    uint8_t buff[oneLineLen];
 
-  for(uint16_t line = 1; line <= DISP_VER_RESOLUTION; line++)
-  {
-    spi_transaction_t t;
-    memset(&t, 0, sizeof(t));
-    t.length = oneLineLen * 8;
-    t.tx_buffer = buff;
+    for(uint16_t line = 0; line < DISP_VER_RESOLUTION; line++)
+    {
+        spi_transaction_t t;
+        memset(&t, 0, sizeof(t));
+        t.length = oneLineLen * 8;
+        t.tx_buffer = buff;
 
-    #ifdef LS032B7DD02
-      buff[0] = ((line + 1) << 6) | 0x01;  //update one specified line with M0=H,M2=L & AG0:AG1 concatenate to Bit[1:0] sending with LSB first
-      buff[1] = (line + 1) >> 2;           //AG2~AG9 in LSB first
-    #else
-      buff[0] = 0x01;                               //update one specified line with M0=H,M2=L sending with LSB first
-      buff[1] = line + 1;                           //AG0~AG7 in LSB first for gate line address
-    #endif
+#ifdef LS032B7DD02
+        buff[0] = ((line + 1) << 6) | UPD_CMD; //update one specified line with M0=H,M2=L & AG0:AG1 concatenate to Bit[1:0] sending with LSB first
+        buff[1] = (line + 1) >> 2;          //AG2~AG9 in LSB first
+#else
+        buff[0] = UPD_CMD;                     //update one specified line with M0=H,M2=L sending with LSB first
+        buff[1] = line + 1;                 //AG0~AG7 in LSB first for gate line address
+#endif
 
     for(uint16_t dot = 0; dot < DISP_HOR_RESOLUTION >> 3; dot++) {
-      buff[dot + 2] = pattern;
+        buff[dot + 2] = pattern;
     }
 
     spi_device_polling_transmit(SpiDevice, &t);
 
     if(line == DISP_VER_RESOLUTION / 2)
     {
-      if(pfcn) {
-        pfcn();//run pfcn() only once sample in the middle, pls make sure sampling time is long enough
-      }
+        if(pfcn) {
+            pfcn();//run pfcn() only once sample in the middle, pls make sure sampling time is long enough
+        }
     }
   }
   
@@ -378,10 +376,10 @@ static void GFXDisplayUpdateLine(uint16_t line, uint8_t *buf)
   t.tx_buffer = buff;
 
 #ifdef LS032B7DD02
-  buff[0] = ((line + 1) << 6) | 0x01;  //update one specified line with M0=H,M2=L & AG0:AG1 concatenate to Bit[1:0] sending with LSB first
+  buff[0] = ((line + 1) << 6) | UPD_CMD;  //update one specified line with M0=H,M2=L & AG0:AG1 concatenate to Bit[1:0] sending with LSB first
   buff[1] = (line + 1) >> 2;           //AG2~AG9 in LSB first
 #else
-  buff[0] = 0x01;                               //update one specified line with M0=H,M2=L sending with LSB first
+  buff[0] = UPD_CMD;                               //update one specified line with M0=H,M2=L sending with LSB first
   buff[1] = line + 1;                           //AG0~AG7 in LSB first for gate line address
 #endif
 
@@ -701,14 +699,14 @@ void memorylcd_init()
   //Set DISP pin an output default low
   pinMode(GFX_DISPLAY_DISP, OUTPUT);
   digitalWrite(GFX_DISPLAY_DISP, LOW); 
-  //Set GFX_DISPLAY_EXTCOMIN pin an output default low
+  //Set EXTCOMIN pin an output default low
   pinMode(GFX_DISPLAY_EXTCOMIN, OUTPUT);
   digitalWrite(GFX_DISPLAY_EXTCOMIN, LOW);
 
   spi_bus_config_t bus_config;
   memset(&bus_config, 0, sizeof(spi_bus_config_t));
-  bus_config.mosi_io_num = 21;
-  bus_config.sclk_io_num = 20;
+  bus_config.mosi_io_num = GFX_DISPLAY_MOSI;
+  bus_config.sclk_io_num = GFX_DISPLAY_SCK;
   bus_config.miso_io_num = -1;
   bus_config.quadwp_io_num = -1;
   bus_config.quadhd_io_num = -1;
@@ -729,13 +727,14 @@ void memorylcd_init()
   dev_config.command_bits = 0;
   dev_config.address_bits = 0;
   dev_config.dummy_bits = 0;
-  dev_config.mode = 0;
-  dev_config.clock_speed_hz = 2 * 1000 * 1000;
+  dev_config.mode = 0;//3;//2;//1;//0;
+  dev_config.clock_speed_hz = 1 * 1000 * 1000;
   dev_config.spics_io_num = -1;
   //dev_config.post_cb = spi_end;
   dev_config.duty_cycle_pos = 128;
   dev_config.queue_size = 3;
-  spi_bus_add_device(SpiHost, &dev_config, &SpiDevice);
+    dev_config.flags = SPI_DEVICE_BIT_LSBFIRST;
+    spi_bus_add_device(SpiHost, &dev_config, &SpiDevice);
 }
 
 void memorylcd_update(uint8_t *buff, uint16_t len) {
@@ -751,13 +750,13 @@ void memorylcd_update(uint8_t *buff, uint16_t len) {
  * @note  EXTCOMIN frequency should be made lower than frame frequency.
  *        Reference: http://forum.arduino.cc/index.php?topic=425385.0
  */
-void hal_extcom_start(uint8_t hz)
+void hal_extcom_start(uint16_t hz)
 {
-  Timer = xTimerCreate("Timer", hz * 1000, pdTRUE, (void *) 0, hal_extcom_toggle);
+    Timer = xTimerCreate("Timer", 1000 / hz, pdTRUE, (void *) 0, hal_extcom_toggle);
 
-  if(Timer) {
-    xTimerStart(Timer, 0 );
-  }
+    if(Timer) {
+        xTimerStart(Timer, 0 );
+    }
 }
 
 /**
@@ -765,24 +764,19 @@ void hal_extcom_start(uint8_t hz)
  */
 void hal_extcom_stop()
 {
-  if(Timer)
-  {
-    xTimerStop(Timer, 10);
-    xTimerDelete(Timer, 10);
-    Timer = 0;
-  }
+    if(Timer)
+    {
+        xTimerStop(Timer, 10);
+        xTimerDelete(Timer, 10);
+        Timer = 0;
+    }
 }
 
 /**
  * brief	HAL function to toggle EXTCOMIN pin
  */
-void IRAM_ATTR hal_extcom_toggle(TimerHandle_t xTimer)
+void /*IRAM_ATTR*/ hal_extcom_toggle(TimerHandle_t xTimer)
 {
-  if(!xTimer)
-    return;
-
-  if(digitalRead(GFX_DISPLAY_EXTCOMIN) == HIGH)
-    digitalWrite(GFX_DISPLAY_EXTCOMIN, LOW);
-  else
-    digitalWrite(GFX_DISPLAY_EXTCOMIN, HIGH);
+    digitalWrite(GFX_DISPLAY_EXTCOMIN, ExtPinLast);
+    ExtPinLast = !ExtPinLast;
 }
