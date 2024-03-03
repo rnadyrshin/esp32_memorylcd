@@ -32,7 +32,7 @@ void disp1color_Init()
     memorylcd_Init();
     memorylcd_PowerOn();
     disp1color_FillScreenbuff(0xFF);
-    memorylcd_update(buff, sizeof(buff));
+    //memorylcd_Update(buff, sizeof(buff));
 #endif
 }
 
@@ -56,7 +56,7 @@ void disp1color_FillScreenbuff(uint8_t FillValue)
 void disp1color_UpdateFromBuff()
 {
 #if (DISP1COLOR_type == DISPTYPE_ssd1306)
-    memorylcd_update(buff, sizeof(buff));
+    memorylcd_Update(buff, sizeof(buff));
 #endif
 }
 

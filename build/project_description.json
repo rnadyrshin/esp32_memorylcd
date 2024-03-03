@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "blink",
-    "project_version":    "b750fa4-dirty",
+    "project_version":    "76b034a-dirty",
     "project_path":       "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd",
     "idf_path":           "/Users/ruslan/esp/v5.2/esp-idf",
     "build_dir":          "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/build",
@@ -820,7 +820,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__led_strip" ],
             "file": "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/build/esp-idf/main/libmain.a",
-            "sources": [ "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/disp1color.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/fonts/f10x16f.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/fonts/f6x8m.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/fonts/font.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/memorylcd/HalGpio.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/memorylcd/MemoryLCD.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/memorylcd/bfcFontMgr.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/main.c" ],
+            "sources": [ "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/disp1color.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/fonts/f10x16f.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/fonts/f6x8m.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/display/fonts/font.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/memorylcd/HalGpio.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/memorylcd/MemoryLCD.c", "/Users/ruslan/Firmwares/Channel/memorylcd/esp32_memorylcd/main/main.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {
