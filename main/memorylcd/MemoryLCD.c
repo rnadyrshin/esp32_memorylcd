@@ -30,18 +30,24 @@ static spi_device_handle_t SpiDevice = 0;
 static TimerHandle_t Timer;
 uint8_t frameBuffer[GFX_FB_CANVAS_H][GFX_FB_CANVAS_W];
 
-/**
- * @brief	Local function to write a pixel to the frame buffer. No display on LCD yet.
- * @param	x is the x-coordinate in range 0 ~ (DISP_HOR_RESOLUTION-1)
- * @param	y is the y-coordinate in ranage 0 ~ (DISP_VER_RESOLUTION-1)
- * @param	color is an enum type defined in MemoryLCD.h
-			typedef enum
-			{
-				BLACK = 0,
-				WHITE,
-				TRANSPARENT	//means leaving original color
-			} COLOR;
- */
+void hal_extcom_start(uint16_t hz);
+void hal_extcom_stop();
+void hal_extcom_toggle(TimerHandle_t xTimer);
+
+void memorylcd_DrawPixel(uint8_t *buff, uint16_t dispWidth, uint16_t x, uint16_t y, uint8_t color)
+{
+	//if(y > (GFX_FB_CANVAS_H - 1) || ((x >> 3) > (GFX_FB_CANVAS_W - 1)))
+    //    return;
+	
+	//uint8_t maskBit = 0x80 >> (x & 0x07);	//SPI data sent with MSB first
+	uint8_t maskBit = 0x01 << (x & 0x07);	//SPI data sent with LSB first
+	uint16_t byteIdx = y * (dispWidth >> 3) + (x >> 3);
+
+	if(!color)
+        buff[byteIdx] |= maskBit;
+    else
+        buff[byteIdx] &= ~maskBit;
+}
 
 void GFXDisplayPutPixel_FB(uint16_t x, uint16_t y, COLOR color)
 {
@@ -137,159 +143,11 @@ void GFXDisplayPutPixel(uint16_t x, uint16_t y, COLOR color)
   GFXDisplayUpdateLine(y, (uint8_t *)&frameBuffer[y]);	//Update on screen. Line counts from 1 thats why y+1
 }
 
-/**
- * @brief	Draw a horizontal line 
- * @param	x1 is the starting coordinate(0~DISP_HOR_RESOLUTION-1)
- * @param	x2 is the ending coordinate(0~DISP_HOR_RESOLUTION-1)
- * @param	y is the line position (0~DISP_VER_RESOLUTION-1)
- * @param	color is BLACK/WHITE
- * @param	thick is the thickness in pixels ranges 1~255
- */
-void GFXDisplayLineDrawH(uint16_t x1, uint16_t x2, uint16_t y, COLOR color, uint8_t thick)
-{
-  if(thick==0)
-    return;
-
-  uint16_t _y, x, x_left, x_right;
-
-  if(x1 > x2) {
-    x_right = x1; x_left = x2;
-  }
-  else {
-    x_right = x2; x_left = x1;
-  }
-
-  for(_y = y; _y < (y+thick); _y++)
-  {
-    for(x = x_left; x <= x_right; x++)
-      GFXDisplayPutPixel_FB(x, _y, color);
-  }
-
-  GFXDisplayUpdateBlock(y+1, y+thick, (uint8_t *)frameBuffer[y]);
-}
-
-/**
- * @brief	Draw a vertical line
- * @param	x is the horizontal position (0~DISP_HOR_RESOLUTION-1)
- * @param	y1 is the starting y position (0~DISP_VER_RESOLUTION-1)
- * @param	y2 is the ending y position (0~DISP_VER_RESOLUTION-1)
- * @param	color is BLACK/WHITE
- * @param	thick is the thickness in pixels ranges 1~255
- */
-void GFXDisplayLineDrawV(uint16_t x, uint16_t y1, uint16_t y2, COLOR color, uint8_t thick)
-{
-  if(thick==0)
-    return;
-
-  uint16_t _x, y, y_top, y_bottom;
-
-  if(y1 > y2) {
-    y_bottom = y1; y_top = y2;
-  }
-  else {
-    y_bottom = y2; y_top = y1;
-  }
-
-  for(y = y_top; y<= y_bottom; y++)
-  {
-    for(_x = x; _x < (x+thick); _x++)
-    {
-      GFXDisplayPutPixel_FB(_x, y, color);
-    }
-  }
-
-  GFXDisplayUpdateBlock(y_top+1, y_bottom+1, (uint8_t *)frameBuffer[y_top]);
-}
-
-/**
- * @brief	Draw a rectangle
- * @param	left is the starting position from left (0~DISP_HOR_RESOLUTION-1)
- * @param	top is the starting position from top (0~DISP_VER_RESOLUTION-1)
- * @param	right is the ending position to the right (0~DISP_HOR_RESOLUTION-1)
- * @param	bottom is the ending position to the bottom (0~DISP_HOR_RESOLUTION-1)
- * @param	color is BLACK/WHITE
- */
-void GFXDisplayDrawRect(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom, COLOR color)
-{
-  uint16_t _left=left, _top=top, _right=right, _bottom=bottom;
-
-  if(left > right) {
-    _left = right; _right = left;
-  }
-
-  if(top > bottom) {
-    _top = bottom; _bottom = top;
-  }
-
-  for(uint16_t y = _top; y <= _bottom; y++)
-  {
-    for(uint16_t x = _left; x <= _right; x++)
-      GFXDisplayPutPixel_FB(x,y,color);	//update the framebuffer first
-  }
-
-  GFXDisplayUpdateBlock(_top, _bottom, (uint8_t *)frameBuffer[_top]);
-}
-
-/**
- * @brief 	Print a picture with byte array created by a shareware LCD Assistant (http://en.radzio.dxp.pl/bitmap_converter/)
- * @note	Option in LCD Assistant: Byte orientation = Horizontal, Other = Include size, endianness=Little<, Pixels/byte=8<br>
- *			This fcn for reference only.
- * @param	left is the top left corner position
- * @param	top is the top line position
- * @param	*data is a pointer to data array in Flash space
- * @param	invert is a boolean flag for negative effect (true for negative, false for normal display)
- */
- /*
-void GFXDisplayPutPicture(uint16_t left, uint16_t top, const uint8_t* data, bool invert)
-{
-	uint16_t imgHeight=0, imgWidth=0;
-	const uint8_t *pdata;
-	uint16_t x, y, _x, _y;
-	uint8_t pixel, bit;
-	COLOR _color;
-	
-	pdata = data;
-	imgWidth =  (((uint16_t)*(pdata+1))<<8) + (uint16_t)*pdata;
-	imgHeight = (((uint16_t)*(pdata+3))<<8) + (uint16_t)*(pdata+2);
-	
-	//USE_SERIAL.print("Image height = "); USE_SERIAL.println(imgHeight);
-	//USE_SERIAL.print("Image width = "); USE_SERIAL.println(imgWidth);
-	
-	pdata += 4;	//points to the 5th byte for head of data
-	
-	uint16_t bytesPerLine = (imgWidth+7)/8;
-	//USE_SERIAL.print("Bytes/Line = "); USE_SERIAL.println(bytesPerLine);
-	for(y = 0; y < imgHeight; y++)
-    {
-        for(x = 0; x < imgWidth; x++)
-        {
-            uint16_t col = x/8;
-			pixel = pdata[y*bytesPerLine + col];
-			if(!invert)
-				pixel^=0xff;
-			//USE_SERIAL.print("pixel = "); USE_SERIAL.println(pixel, HEX);
-			bit = x%8;
-			pixel = pixel<<bit;
-			pixel = pixel>>7;
-			
-			_x = left + x;
-			_y = top  + y;
-            (pixel==1) ? _color = WHITE :  _color = BLACK;
-			//USE_SERIAL.print("(_x,_y) = "); USE_SERIAL.print(_x);USE_SERIAL.print(','); USE_SERIAL.println(_y);
-            GFXDisplayPutPixel_FB(_x, _y, _color);	//save to frame buffer first
-        }
-    }	
-	GFXDisplayUpdateBlock(top+1, top+imgHeight, (uint8_t *)&frameBuffer[top]);
-}
-*/
-
 void SendDummyBytes() {
+  uint8_t buff[2] = {0, 0};
+
   spi_transaction_t t;
   memset(&t, 0, sizeof(t));
-
-  uint8_t buff[2];
-  memset(buff, 0, 2);
-
   t.length = 2 * 8;
   t.tx_buffer = buff;
   spi_device_polling_transmit(SpiDevice, &t);
@@ -384,7 +242,8 @@ static void GFXDisplayUpdateLine(uint16_t line, uint8_t *buf)
 #endif
 
   for(uint16_t dot = 0; dot < DISP_HOR_RESOLUTION >> 3; dot++) {
-    buff[dot + 2] = *(buf++);
+    buff[dot + 2] = *buf;
+    buf++;
   }
 
   spi_device_polling_transmit(SpiDevice, &t);
@@ -691,7 +550,7 @@ void IRAM_ATTR hal_delayUs(uint32_t us)
   }
 }
 
-void memorylcd_init()
+void memorylcd_Init()
 {
   //Set SCS pin an output default low
   pinMode(GFX_DISPLAY_SCS, OUTPUT);
@@ -740,7 +599,7 @@ void memorylcd_init()
 void memorylcd_update(uint8_t *buff, uint16_t len) {
   //GFXDisplayUpdateBlock(0, 239, buff);
 
-  GFXDisplayUpdateBlock(0, 239, frameBuffer);
+  GFXDisplayUpdateBlock(0, 239, buff);
   
 } 
 

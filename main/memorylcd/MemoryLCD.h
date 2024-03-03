@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include <stdint.h>	  //for uint8_t etc.
-#include <stdbool.h>  //for bool type
+#include <stdint.h>
+#include <stdbool.h>
 #include "bfcFontMgr.h"
 #include "tImage.h"
 /**
@@ -78,14 +78,11 @@ typedef enum
 	TRANSPARENT	//means leaving original color
 } COLOR;
 
-void memorylcd_init();
+void memorylcd_Init();
 void memorylcd_update(uint8_t *buff, uint16_t len);
 
 void hal_delayMs(uint32_t ms);
 void hal_delayUs(uint32_t us);
-void hal_extcom_start(uint16_t hz);
-void hal_extcom_stop();
-void hal_extcom_toggle(TimerHandle_t xTimer);
 
 /**
 ********************************************************************************************************
@@ -97,6 +94,7 @@ void memorylcd_PowerOn();
 void GFXDisplayOn();
 void GFXDisplayPowerOff();
 void GFXDisplayOff();
+void memorylcd_DrawPixel(uint8_t *buff, uint16_t dispWidth, uint16_t x, uint16_t y, uint8_t color);
 void GFXDisplayPutPixel(uint16_t x, uint16_t y, COLOR color);
 void GFXDisplayPutPixel_FB(uint16_t x, uint16_t y, COLOR color);
 void GFXDisplayLineDrawH(uint16_t x1, uint16_t x2, uint16_t y, COLOR color, uint8_t thick);

@@ -1,23 +1,15 @@
 //------------------------------------------------------------------------------
 // This is Open source software. You can place this code on your site, but don't
 // forget a link to my YouTube-channel: https://www.youtube.com/channel/UChButpZaL5kUUl_zTyIDFkQ
-// Это программное обеспечение распространяется свободно. Вы можете размещать
-// его на вашем сайте, но не забудьте указать ссылку на мой YouTube-канал 
-// "Электроника в объектике" https://www.youtube.com/channel/UChButpZaL5kUUl_zTyIDFkQ
-// Автор: Надыршин Руслан / Nadyrshin Ruslan
+// Author: Nadyrshin Ruslan
 //------------------------------------------------------------------------------
-#ifndef _FONTS_H
-#define _FONTS_H
+#pragma once
 
-#include <types.h>
+#include <stdint.h>
 
-
-// Список ID шрифтов (пока только один)
 #define FONTID_6X8M     0
 #define FONTID_10X16F   1
 
-  
-// Константы, позволяющие в файлах шрифтов отображать символы в читаемом виде 
 #define	________	0x0
 #define	_______X	0x1
 #define	______X_	0x2
@@ -276,15 +268,13 @@
 #define	XXXXXXXX	0xff
   
 
-// Тип, содержащий указатель на функцию GetCharTable у шрифтов
+// пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ GetCharTable пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 typedef uint8_t *(*t_font_getchar)(uint8_t Char);
 
 
-// Функция возвращает указатель на структуру, описывающую символ Char
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ Char
 uint8_t *font_GetFontStruct(uint8_t FontID, uint8_t Char);
-// Функция возвращает ширину символа
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 uint8_t font_GetCharWidth(uint8_t *pCharTable);
-// Функция возвращает высоту символа
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 uint8_t font_GetCharHeight(uint8_t *pCharTable);
-
-#endif

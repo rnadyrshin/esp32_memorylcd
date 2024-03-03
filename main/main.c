@@ -4,6 +4,7 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "led_strip.h"
+#include "display/disp1color.h"
 #include "memorylcd/MemoryLCD.h"
 #include "sdkconfig.h"
 
@@ -61,36 +62,23 @@ void app_main()
     //configure_led();
 
     ESP_LOGI(TAG, "Init display");
-    memorylcd_init();
-    memorylcd_PowerOn();
+    disp1color_Init();
 
+    disp1color_DrawLine(0, 200, 400, 200);
+    disp1color_DrawLine(0, 210, 400, 210);
+    disp1color_DrawLine(0, 220, 400, 220);
+    disp1color_DrawLine(0, 230, 400, 230);
+    disp1color_DrawRectangle(10, 50, 200, 100); 
+    disp1color_DrawCircle(200, 120, 7);
 
-    for(uint16_t x = 0; x < 200; x++) {
-        //frameBuffer[5][x] = 
-        GFXDisplayPutPixel_FB(x, 0, BLACK);
-        GFXDisplayPutPixel_FB(x, 10, BLACK);
-        GFXDisplayPutPixel_FB(x, 20, BLACK);
-        GFXDisplayPutPixel_FB(x, 30, BLACK);
-        GFXDisplayPutPixel_FB(x, 40, BLACK);
-        GFXDisplayPutPixel_FB(x, 50, BLACK);
-        //GFXDisplayPutPixel_FB(x, 10, WHITE);
-    }
-
-    //uint16_t cntr = 0;
+    disp1color_DrawString(10, 10, FONTID_10X16F, (uint8_t*) "TEST");
+    disp1color_printf(10, 30, 0, "test %d", 555);
 
     while (1) {
         //ESP_LOGI(TAG, "Turning the LED %s!", s_led_state == true ? "ON" : "OFF");
         //blink_led();
-
-        ESP_LOGI(TAG, "Update");
         
-        memorylcd_update(0, 0);
-        //GFXDisplayTestPattern(0x55, 0);
-
-        //GFXDisplayPutPixel(cntr, cntr, BLACK);
-        //if(++cntr >= 240)
-        //    cntr = 0;
-
+        disp1color_UpdateFromBuff();
         vTaskDelay(200 /*CONFIG_BLINK_PERIOD*/ / portTICK_PERIOD_MS);
     }
 }
