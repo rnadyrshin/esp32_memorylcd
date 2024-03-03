@@ -60,6 +60,30 @@ void disp1color_UpdateFromBuff()
 #endif
 }
 
+void disp1color_DrawImageFast(uint8_t *imgBuff) {
+    uint8_t *pBuff = buff;
+
+    for(uint16_t y = 0; y < DISP1COLOR_Height; y++) {
+        for(uint16_t x = 0; x < DISP1COLOR_Width >> 3; x++) {
+            
+            uint8_t imgByte = 0;
+            for(uint8_t bit = 0; bit < 8; bit++) {
+                uint8_t mask = *imgBuff & (1 << bit);
+                if(mask) {
+                    imgByte |= 1 << (7 - bit);
+                }
+            }
+
+            *pBuff = imgByte;
+            pBuff++;
+            imgBuff++;
+        }
+    }
+
+    
+    //memcpy(buff, imgBuff, (DISP1COLOR_Width * DISP1COLOR_Height) >> 3);
+}
+
 int16_t disp1color_printf(uint8_t X, uint8_t Y, uint8_t FontID, const char *args, ...)
 {
   char StrBuff[100];

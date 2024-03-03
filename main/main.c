@@ -6,6 +6,7 @@
 #include "led_strip.h"
 #include "display/disp1color.h"
 #include "memorylcd/MemoryLCD.h"
+#include "images/images.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "example";
@@ -57,6 +58,12 @@ static void configure_led(void)
     led_strip_clear(led_strip);
 }
 
+void DrawImage(uint8_t *imgBuff) {
+    disp1color_DrawImageFast(imgBuff);
+    disp1color_UpdateFromBuff();
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+}
+
 void app_main()
 {
     //configure_led();
@@ -77,8 +84,29 @@ void app_main()
     while (1) {
         //ESP_LOGI(TAG, "Turning the LED %s!", s_led_state == true ? "ON" : "OFF");
         //blink_led();
+        //vTaskDelay(CONFIG_BLINK_PERIOD / portTICK_PERIOD_MS);
         
-        disp1color_UpdateFromBuff();
-        vTaskDelay(200 /*CONFIG_BLINK_PERIOD*/ / portTICK_PERIOD_MS);
+        DrawImage(img001);
+        DrawImage(img002);
+        DrawImage(img003);
+        DrawImage(img004);
+        DrawImage(img005);
+        DrawImage(img006);
+        DrawImage(img007);
+        DrawImage(img008);
+        DrawImage(img009);
+        DrawImage(img010);
+        DrawImage(img011);
+        DrawImage(img012);
+        DrawImage(img013);
+        DrawImage(img014);
+        DrawImage(img015);
+        DrawImage(img016);
+        DrawImage(img017);
+        DrawImage(img018);
+        DrawImage(img019);
+        DrawImage(img020);
+        DrawImage(img021);
+        DrawImage(img022);
     }
 }

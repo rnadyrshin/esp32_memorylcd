@@ -25,6 +25,7 @@ void disp1color_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void disp1color_DrawRectangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void disp1color_DrawRectangleFilled(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void disp1color_DrawCircle(int16_t x0, int16_t y0, int16_t radius);
+void disp1color_DrawImageFast(uint8_t *imgBuff);
 
 uint8_t disp1color_DrawChar(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t Char);
 int16_t disp1color_DrawString(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t *Str);
