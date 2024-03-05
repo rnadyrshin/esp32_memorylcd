@@ -211,7 +211,7 @@ void memorylcd_Init()
   dev_config.address_bits = 0;
   dev_config.dummy_bits = 0;
   dev_config.mode = 0;
-  dev_config.clock_speed_hz = 1 * 1000 * 1000;
+  dev_config.clock_speed_hz = 14 * 1000 * 1000;
   dev_config.spics_io_num = -1;
   dev_config.duty_cycle_pos = 128;
   dev_config.queue_size = 3;
@@ -242,7 +242,7 @@ void hal_extcom_stop()
     }
 }
 
-void /*IRAM_ATTR*/ hal_extcom_toggle(TimerHandle_t xTimer)
+void IRAM_ATTR hal_extcom_toggle(TimerHandle_t xTimer)
 {
     digitalWrite(MEMORYLCD_EXTCOMIN, ExtPinLast);
     ExtPinLast = !ExtPinLast;

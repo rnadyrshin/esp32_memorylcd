@@ -20,16 +20,17 @@ void disp1color_SetBrightness(uint8_t Value);
 void disp1color_FillScreenbuff(uint8_t FillValue);
 void disp1color_UpdateFromBuff();
 
-void disp1color_DrawPixel(uint8_t X, uint8_t Y, uint8_t State);
+void disp1color_DrawPixel(int16_t X, int16_t Y, uint8_t State);
 void disp1color_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void disp1color_DrawRectangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
-void disp1color_DrawRectangleFilled(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
+void disp1color_FillRectangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void disp1color_DrawCircle(int16_t x0, int16_t y0, int16_t radius);
+void disp1color_FillCircle(int16_t x0, int16_t y0, int16_t radius);
 void disp1color_DrawImageFast(uint8_t *imgBuff);
 
-uint8_t disp1color_DrawChar(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t Char);
-int16_t disp1color_DrawString(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t *Str);
-int16_t disp1color_printf(uint8_t X, uint8_t Y, uint8_t FontID, const char *args, ...);
+uint8_t disp1color_DrawChar(int16_t X, int16_t Y, uint8_t FontID, uint8_t Char);
+int16_t disp1color_DrawString(int16_t X, int16_t Y, uint8_t FontID, uint8_t *Str);
+int16_t disp1color_printf(int16_t X, int16_t Y, uint8_t FontID, const char *args, ...);
 
 int16_t dispcolor_getStrWidth(uint8_t FontID, char *Str);
 int16_t dispcolor_getFormatStrWidth(uint8_t FontID, const char *args, ...);

@@ -74,7 +74,7 @@ void disp1color_DrawImageFast(uint8_t *imgBuff) {
                 }
             }
 
-            *pBuff = imgByte;
+            *pBuff = ~imgByte;
             pBuff++;
             imgBuff++;
         }
@@ -84,7 +84,7 @@ void disp1color_DrawImageFast(uint8_t *imgBuff) {
     //memcpy(buff, imgBuff, (DISP1COLOR_Width * DISP1COLOR_Height) >> 3);
 }
 
-int16_t disp1color_printf(uint8_t X, uint8_t Y, uint8_t FontID, const char *args, ...)
+int16_t disp1color_printf(int16_t X, int16_t Y, uint8_t FontID, const char *args, ...)
 {
   char StrBuff[100];
   
@@ -96,7 +96,7 @@ int16_t disp1color_printf(uint8_t X, uint8_t Y, uint8_t FontID, const char *args
   return disp1color_DrawString(X, Y, FontID, (uint8_t *)StrBuff);
 }
 
-void disp1color_DrawPixel(uint8_t X, uint8_t Y, uint8_t State)
+void disp1color_DrawPixel(int16_t X, int16_t Y, uint8_t State)
 {
   if ((X >= DISP1COLOR_Width) || (Y >= DISP1COLOR_Height))
     return;
@@ -163,7 +163,7 @@ void disp1color_DrawRectangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
   disp1color_DrawLine(x1, y2, x2, y2);
 }
 
-void disp1color_DrawRectangleFilled(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+void disp1color_FillRectangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
   if (x1 > x2)
     SwapInt16Values(&x1, &x2);
@@ -210,7 +210,38 @@ void disp1color_DrawCircle(int16_t x0, int16_t y0, int16_t radius)
   }
 }
 
-uint8_t disp1color_DrawChar(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t Char)
+void disp1color_FillCircle(int16_t x0, int16_t y0, int16_t radius) {
+	int x = 0;
+	int y = radius;
+	int delta = 1 - 2 * radius;
+	int error = 0;
+
+	while (y >= 0) {
+		disp1color_DrawLine(x0 + x, y0 - y, x0 + x, y0 + y);
+		disp1color_DrawLine(x0 - x, y0 - y, x0 - x, y0 + y);
+		error = 2 * (delta + y) - 1;
+
+		if (delta < 0 && error <= 0) {
+			++x;
+			delta += 2 * x + 1;
+			continue;
+		}
+
+		error = 2 * (delta - x) - 1;
+
+		if (delta > 0 && error > 0) {
+			--y;
+			delta += 1 - 2 * y;
+			continue;
+		}
+
+		++x;
+		delta += 2 * (x - y);
+		--y;
+	}
+}
+
+uint8_t disp1color_DrawChar(int16_t X, int16_t Y, uint8_t FontID, uint8_t Char)
 {
   uint8_t *pCharTable = font_GetFontStruct(FontID, Char);
   uint8_t CharWidth = font_GetCharWidth(pCharTable);    // ������ �������
@@ -219,18 +250,18 @@ uint8_t disp1color_DrawChar(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t Char)
 
   if (FontID == FONTID_6X8M)
   {
-    for (uint8_t row = 0; row < CharHeight; row++)
+    for (int16_t row = 0; row < CharHeight; row++)
     {
-      for (uint8_t col = 0; col < CharWidth; col++) {
+      for (int16_t col = 0; col < CharWidth; col++) {
         disp1color_DrawPixel(X + col, Y + row, pCharTable[row] & (1 << (7 - col)));
       }
     }
   }
   else
   {
-    for (uint8_t row = 0; row < CharHeight; row++)
+    for (int16_t row = 0; row < CharHeight; row++)
     {
-      for (uint8_t col = 0; col < CharWidth; col++)
+      for (int16_t col = 0; col < CharWidth; col++)
       {
         if (col < 8)
           disp1color_DrawPixel(X + col, Y + row, pCharTable[row * 2] & (1 << (7 - col)));
@@ -243,10 +274,10 @@ uint8_t disp1color_DrawChar(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t Char)
   return CharWidth;
 }
 
-int16_t disp1color_DrawString(uint8_t X, uint8_t Y, uint8_t FontID, uint8_t *Str)
+int16_t disp1color_DrawString(int16_t X, int16_t Y, uint8_t FontID, uint8_t *Str)
 {
   uint8_t done = 0;             // ���� ��������� ������
-  uint8_t Xstart = X;           // ���������� ���� ����� ���������� ������� ��� �������� �� ����� ������
+  int16_t Xstart = X;           // ���������� ���� ����� ���������� ������� ��� �������� �� ����� ������
   uint8_t StrHeight = 8;        // ������ �������� � �������� ��� �������� �� ��������� ������
 
   // ����� ������
