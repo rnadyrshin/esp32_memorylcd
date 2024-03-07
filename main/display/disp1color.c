@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
 #include "fonts/font.h"
 #include "disp1color.h"
 
@@ -93,7 +94,7 @@ int16_t disp1color_printf(int16_t X, int16_t Y, uint8_t FontID, const char *args
   char len = vsnprintf(StrBuff, sizeof(StrBuff), args, ap);
   va_end(ap);
   
-  return disp1color_DrawString(X, Y, FontID, (uint8_t *)StrBuff);
+  return disp1color_DrawString(X, Y, FontID, StrBuff);
 }
 
 void disp1color_DrawPixel(int16_t X, int16_t Y, uint8_t State)
@@ -142,6 +143,37 @@ void disp1color_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
       y1 += signY;
     }
   }
+}
+
+void disp1color_DrawLine2(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t thick) {
+	const int16_t deltaX = abs(x2 - x1);
+	const int16_t deltaY = abs(y2 - y1);
+	const int16_t signX = x1 < x2 ? 1 : -1;
+	const int16_t signY = y1 < y2 ? 1 : -1;
+
+	int16_t error = deltaX - deltaY;
+
+	if (thick > 1)
+		disp1color_FillCircle(x2, y2, thick >> 1);
+	else
+		disp1color_DrawPixel(x2, y2, 1);
+
+	while (x1 != x2 || y1 != y2) {
+		if (thick > 1)
+			disp1color_FillCircle(x1, y1, thick >> 1);
+		else
+			disp1color_DrawPixel(x1, y1, 1);
+
+		const int16_t error2 = error * 2;
+		if (error2 > -deltaY) {
+			error -= deltaY;
+			x1 += signX;
+		}
+		if (error2 < deltaX) {
+			error += deltaX;
+			y1 += signY;
+		}
+	}
 }
 
 void disp1color_FillRect(int16_t x, int16_t y, int16_t w, int16_t h)
@@ -241,7 +273,54 @@ void disp1color_FillCircle(int16_t x0, int16_t y0, int16_t radius) {
 	}
 }
 
-uint8_t disp1color_DrawChar(int16_t X, int16_t Y, uint8_t FontID, uint8_t Char)
+void disp1color_DrawArc(int16_t x0, int16_t y0, int16_t radius, int16_t startAngle, int16_t endAngle) {
+	int16_t xLast = -1, yLast = -1;
+	startAngle -= 90;
+	endAngle -= 90;
+
+	for (int16_t angle = startAngle; angle <= endAngle; angle += 2) {
+		float angleRad = (float) angle * M_PI / 180;
+		int x = cos(angleRad) * radius + x0;
+		int y = sin(angleRad) * radius + y0;
+
+		if (xLast == -1 || yLast == -1) {
+			xLast = x;
+			yLast = y;
+			continue;
+		}
+
+		disp1color_DrawLine(xLast, yLast, x, y);
+
+		xLast = x;
+		yLast = y;
+	}
+}
+
+void disp1color_DrawArc_Wu(int16_t x0, int16_t y0, int16_t radius, int16_t startAngle, int16_t endAngle) {
+	int16_t xLast = -1, yLast = -1;
+	startAngle -= 90;
+	endAngle -= 90;
+
+	for (int16_t angle = startAngle; angle <= endAngle; angle += 1)	//1)//6)
+			{
+		float angleRad = (float) angle * M_PI / 180;
+		int x = cos(angleRad) * radius + x0;
+		int y = sin(angleRad) * radius + y0;
+
+		if (xLast == -1 || yLast == -1) {
+			xLast = x;
+			yLast = y;
+			continue;
+		}
+
+		disp1color_DrawLine(xLast, yLast, x, y);
+
+		xLast = x;
+		yLast = y;
+	}
+}
+
+uint8_t disp1color_DrawChar(int16_t X, int16_t Y, uint8_t FontID, char Char)
 {
   uint8_t *pCharTable = font_GetFontStruct(FontID, Char);
   uint8_t CharWidth = font_GetCharWidth(pCharTable);    // ������ �������
@@ -274,7 +353,7 @@ uint8_t disp1color_DrawChar(int16_t X, int16_t Y, uint8_t FontID, uint8_t Char)
   return CharWidth;
 }
 
-int16_t disp1color_DrawString(int16_t X, int16_t Y, uint8_t FontID, uint8_t *Str)
+int16_t disp1color_DrawString(int16_t X, int16_t Y, uint8_t FontID, char *Str)
 {
   uint8_t done = 0;             // ���� ��������� ������
   int16_t Xstart = X;           // ���������� ���� ����� ���������� ������� ��� �������� �� ����� ������

@@ -9,6 +9,8 @@
 
 #define FONTID_6X8M     0
 #define FONTID_10X16F   1
+#define FONTID_24F      2
+#define FONTID_32F      3
 
 #define	________	0x0
 #define	_______X	0x1
@@ -267,14 +269,8 @@
 #define	XXXXXXX_	0xfe
 #define	XXXXXXXX	0xff
   
-
-// ���, ���������� ��������� �� ������� GetCharTable � �������
 typedef uint8_t *(*t_font_getchar)(uint8_t Char);
 
-
-// ������� ���������� ��������� �� ���������, ����������� ������ Char
 uint8_t *font_GetFontStruct(uint8_t FontID, uint8_t Char);
-// ������� ���������� ������ �������
 uint8_t font_GetCharWidth(uint8_t *pCharTable);
-// ������� ���������� ������ �������
 uint8_t font_GetCharHeight(uint8_t *pCharTable);

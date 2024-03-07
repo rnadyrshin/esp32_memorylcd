@@ -14,9 +14,6 @@
 # EXTERNAL cache entries
 ########################
 
-//No help, variable specified on the command line.
-CCACHE_ENABLE:UNINITIALIZED=0
-
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/Users/ruslan/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20230928/xtensa-esp-elf/bin/xtensa-esp32s3-elf-addr2line
 
@@ -299,7 +296,7 @@ ESP_PLATFORM:UNINITIALIZED=1
 GEN_FILES:BOOL=
 
 //Git command line client
-GIT_EXECUTABLE:FILEPATH=/usr/bin/git
+GIT_EXECUTABLE:FILEPATH=/opt/homebrew/bin/git
 
 //IDF Build Target
 IDF_TARGET:STRING=esp32s3
@@ -333,9 +330,6 @@ Mbed TLS_IS_TOP_LEVEL:STATIC=OFF
 
 //Value Computed by CMake
 Mbed TLS_SOURCE_DIR:STATIC=/Users/ruslan/esp/v5.2/esp-idf/components/mbedtls/mbedtls
-
-//No help, variable specified on the command line.
-PYTHON:UNINITIALIZED=/Users/ruslan/.espressif/python_env/idf5.2_py3.12_env/bin/python
 
 //No help, variable specified on the command line.
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
@@ -576,7 +570,7 @@ CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
 C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS:INTERNAL=1
 //Details about finding Git
-FIND_PACKAGE_MESSAGE_DETAILS_Git:INTERNAL=[/usr/bin/git][v2.39.3 (Apple Git-145)()]
+FIND_PACKAGE_MESSAGE_DETAILS_Git:INTERNAL=[/opt/homebrew/bin/git][v2.36.1()]
 //Details about finding Python3
 FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/Users/ruslan/.espressif/python_env/idf5.2_py3.12_env/bin/python][cfound components: Interpreter ][v3.12.0()]
 //ADVANCED property for variable: GIT_EXECUTABLE

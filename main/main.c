@@ -6,6 +6,7 @@
 #include "display/disp1color.h"
 #include "images/images.h"
 #include "game.h"
+#include "demo/demo.h"
 #include "ledstrip.h"
 #include "sdkconfig.h"
 
@@ -23,6 +24,10 @@ void app_main()
 
     ESP_LOGI(TAG, "Init display");
     disp1color_Init();
+    
+    //demo_clock();
+    demo_text();
+    
     //game(DISP1COLOR_Width, DISP1COLOR_Height);
 
     disp1color_DrawLine(0, 200, 400, 200);
@@ -32,7 +37,7 @@ void app_main()
     disp1color_DrawRectangle(10, 50, 200, 100); 
     disp1color_DrawCircle(200, 120, 7);
 
-    disp1color_DrawString(10, 10, FONTID_10X16F, (uint8_t*) "TEST");
+    disp1color_DrawString(10, 10, FONTID_10X16F, "TEST");
     disp1color_printf(10, 30, 0, "test %d", 555);
 
     while (1) {

@@ -4,6 +4,7 @@ SRC_DIRS
 "display/fonts"
 "images"
 "memorylcd"
+"demo"
 "."
 INCLUDE_DIRS "."
 )

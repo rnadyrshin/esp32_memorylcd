@@ -21,7 +21,7 @@
 //#define 	LS011B7DH03
 
 //@note pin number definition, hardware dependent
-#define SPI_HOST              SPI2_HOST
+#define SPI_HOST            SPI2_HOST
 
 #define MEMORYLCD_SCK       10
 #define MEMORYLCD_MOSI      11
@@ -30,7 +30,7 @@
 #define MEMORYLCD_DISP      14
 
 //@note EXTCOMIN pulse frequency in hal_extcom_start(hz) fcn. -> GFXDisplayOn()
-#define EXTCOMIN_FREQ 1
+#define EXTCOMIN_FREQ       2
 
 
 #ifndef MIN
