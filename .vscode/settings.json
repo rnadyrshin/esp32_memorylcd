@@ -8,6 +8,7 @@
     "files.associations": {
         "__locale": "cpp",
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "demo.h": "c"
     }
 }

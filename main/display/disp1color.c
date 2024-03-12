@@ -61,7 +61,7 @@ void disp1color_UpdateFromBuff()
 #endif
 }
 
-void disp1color_DrawImageFast(uint8_t *imgBuff) {
+void disp1color_DrawImage(uint8_t *imgBuff) {
     uint8_t *pBuff = buff;
 
     for(uint16_t y = 0; y < DISP1COLOR_Height; y++) {

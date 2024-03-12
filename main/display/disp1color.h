@@ -29,7 +29,7 @@ void disp1color_DrawCircle(int16_t x0, int16_t y0, int16_t radius);
 void disp1color_FillCircle(int16_t x0, int16_t y0, int16_t radius);
 void disp1color_DrawArc(int16_t x0, int16_t y0, int16_t radius, int16_t startAngle, int16_t endAngle);
 void disp1color_DrawArc_Wu(int16_t x0, int16_t y0, int16_t radius, int16_t startAngle, int16_t endAngle);
-void disp1color_DrawImageFast(uint8_t *imgBuff);
+void disp1color_DrawImage(uint8_t *imgBuff);
 
 uint8_t disp1color_DrawChar(int16_t X, int16_t Y, uint8_t FontID, char Char);
 int16_t disp1color_DrawString(int16_t X, int16_t Y, uint8_t FontID, char *Str);
